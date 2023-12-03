@@ -16,4 +16,3 @@ public:
 
 	std::fstream file;
 };
-void GetInput(const std::string& day);

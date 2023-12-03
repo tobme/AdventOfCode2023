@@ -20,6 +20,9 @@ InputManager::InputManager(const std::string& day) : file()
 
 Matrix InputManager::getMatrix()
 {
+    file.clear();
+    file.seekg(0);
+
     Matrix matrix{};
 
     std::string s;
@@ -37,9 +40,4 @@ Matrix InputManager::getMatrix()
     }
 
     return matrix;
-}
-
-void GetInput(const std::string& day)
-{
-
 }
