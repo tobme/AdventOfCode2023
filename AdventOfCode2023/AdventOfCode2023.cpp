@@ -4,6 +4,7 @@
 #include "AdventOfCode2023.h"
 
 #include<iostream>
+#include <chrono>
 
 #include "Helpers/GetInput.h"
 
@@ -153,13 +154,25 @@ int main()
 
 	auto currentDayChallange = GetChallangeFunction(day);
 
+	auto beg = std::chrono::high_resolution_clock::now();
+
 	auto answer = currentDayChallange->runChallange();
 
-	std::cout << "Answer: " << answer << std::endl;
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto duration = duration_cast<std::chrono::milliseconds>(end - beg);
+
+	std::cout << "Answer: " << answer << " It took: " << duration << std::endl;
+
+	beg = std::chrono::high_resolution_clock::now();
 
 	auto answer2 = currentDayChallange->runChallangePart2();
 
-	std::cout << "Answer 2: " << answer2 << std::endl;
+	end = std::chrono::high_resolution_clock::now();
+
+	duration = duration_cast<std::chrono::milliseconds>(end - beg);
+
+	std::cout << "Answer 2: " << answer2 << " It took: " << duration << std::endl;
 
 	return 0;
 }
