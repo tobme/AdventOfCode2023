@@ -14,5 +14,7 @@ public:
 
 	Matrix getMatrix();
 
+	void resetStream();
+
 	std::fstream file;
 };

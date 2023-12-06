@@ -17,11 +17,16 @@ InputManager::InputManager(const std::string& day) : file()
         throw std::exception("File does not exist");
     }
 }
-
-Matrix InputManager::getMatrix()
+void InputManager::resetStream()
 {
     file.clear();
     file.seekg(0);
+
+}
+
+Matrix InputManager::getMatrix()
+{
+    resetStream();
 
     Matrix matrix{};
 

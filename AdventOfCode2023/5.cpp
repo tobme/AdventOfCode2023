@@ -99,8 +99,6 @@ struct pairComparer
 	}
 };
 
-
-
 std::string DayFive::runChallangePart2()
 {
 	inputManager->file.clear();
