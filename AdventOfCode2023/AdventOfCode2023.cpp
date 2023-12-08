@@ -150,19 +150,19 @@ int main()
 
 	// Get Current Date
 
-	day = "7";
+	day = "8";
 
 	auto currentDayChallange = GetChallangeFunction(day);
 
 	auto beg = std::chrono::high_resolution_clock::now();
 
-	auto answer = currentDayChallange->runChallange();
+	//auto answer = currentDayChallange->runChallange();
 
 	auto end = std::chrono::high_resolution_clock::now();
 
 	auto duration = duration_cast<std::chrono::milliseconds>(end - beg);
 
-	std::cout << "Answer: " << answer << " It took: " << duration << std::endl;
+	//std::cout << "Answer: " << answer << " It took: " << duration << std::endl;
 
 	beg = std::chrono::high_resolution_clock::now();
 
