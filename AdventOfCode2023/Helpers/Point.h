@@ -5,7 +5,9 @@ class Point
 public:
 	Point(int _x, int _y);
 
-	double distance(const Point& p);
+	double pythDistance(const Point& p);
+
+	int distance(const Point& p);
 
 	int x;
 	int y;
