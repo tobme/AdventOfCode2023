@@ -4,6 +4,7 @@ template<typename T>
 class Range
 {
 public:
+	Range() = default;
 	Range(T s, T e);
 
 	T start;

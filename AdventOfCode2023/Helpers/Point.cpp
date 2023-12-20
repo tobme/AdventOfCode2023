@@ -2,6 +2,7 @@
 
 #include<math.h>
 
+
 Point::Point(int _x, int _y) : x(_x), y(_y)
 {
 }
@@ -22,4 +23,16 @@ int Point::distance(const Point& p)
 	int yDist = abs(y - p.y);
 
 	return xDist + yDist;
+}
+
+Point Point::operator+(const Point& p)
+{
+	int tx = x + p.x;
+	int ty = y + p.y;
+	return Point(tx, ty);
+}
+
+bool Point::operator==(const Point& p) const
+{
+	return x == p.x && y == p.y;
 }
