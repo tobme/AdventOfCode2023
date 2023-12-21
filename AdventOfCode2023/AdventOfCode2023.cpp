@@ -150,7 +150,7 @@ int main()
 
 	// Get Current Date
 
-	day = "19";
+	day = "20";
 
 	auto currentDayChallange = GetChallangeFunction(day);
 
