@@ -5,6 +5,8 @@
 #include "Helpers/Range.h"
 #include "Helpers/Utilities.h"
 
+using namespace Util;
+
 DayNineteen::DayNineteen(const std::shared_ptr<InputManager> getInput) : ICodeChallange(getInput) {}
 
 class Rule

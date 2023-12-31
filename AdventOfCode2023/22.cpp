@@ -6,6 +6,8 @@
 #include<unordered_map>
 #include<unordered_set>
 
+using namespace Util;
+
 DayTwentytwo::DayTwentytwo(const std::shared_ptr<InputManager> getInput) : ICodeChallange(getInput) {}
 
 namespace {

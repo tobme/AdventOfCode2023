@@ -115,6 +115,26 @@ int GcdOfArray(std::vector<long long>& arr, int idx)
 		a, b); // __gcd(a,b) is inbuilt library function 
 }
 
+long long shoelace(const std::vector<std::pair<long long, long long>>& lavas)
+{
+	long long res = 0;
+	long long res2 = 0;
+
+	for (int i = 0; i < lavas.size(); i++)
+	{
+		auto lhs = lavas.at(i);
+		auto rhs = lavas.at((i + 1) % lavas.size());
+		res += (lhs.first * rhs.second) - (lhs.second * rhs.first);
+	}
+
+	// Add last
+
+	res = std::abs(res / 2);
+
+
+	return res;
+}
+
 std::string DayEighteen::runChallangePart2()
 {
 	inputManager->resetStream();
@@ -141,13 +161,17 @@ std::string DayEighteen::runChallangePart2()
 
 	std::vector<std::pair<long long, long long>> lavas;
 
-	std::vector<std::pair<int,int>> dirMap = { {0,1}, {1,0}, {0,-1}, {-1,0} };
+	std::vector<std::pair<long long,long long>> dirMap = { {0,1}, {1,0}, {0,-1}, {-1,0} };
 
 	long long startRow = 0;
 	long long endRow = 0;
 
 	long long startCol = 0;
 	long long endCol = 0;
+
+	lavas.push_back(currentPos);
+
+	long long bPoints = 0;
 
 	while (getline(inputManager->file, line))
 	{
@@ -172,12 +196,16 @@ std::string DayEighteen::runChallangePart2()
 
 		ss << hexCode;
 
-		int hexV;
+		long long hexV;
 		ss >> std::hex >> hexV;
 
-		lavas.push_back(currentPos);
+		bPoints += hexV;
+
+		
 		currentPos.first = currentPos.first + (dirMap[dir].first * hexV);
 		currentPos.second = currentPos.second + (dirMap[dir].second * hexV);
+
+		lavas.push_back(currentPos);
 
 		// Find grid
 		startRow = std::min(startRow, currentPos.first);
@@ -187,61 +215,9 @@ std::string DayEighteen::runChallangePart2()
 		endCol = std::max(endCol, currentPos.second);
 	}
 
-	std::sort(lavas.begin(), lavas.end(), pSort);
+	long long res = shoelace(lavas);
 
+	res += (bPoints / 2) + 1;
 
-	/*
-	Point fillStartPos{ startRow - 1, startCol - 1 };
-	std::queue<Point> queue;
-	queue.push(fillStartPos);
-
-	std::unordered_set<Point, PointHashFunction> visited;
-
-	while (!queue.empty())
-	{
-		auto p = queue.front();
-		queue.pop();
-
-		auto r = p + dirMap["R"];
-		if (r.x >= startRow - 1 && r.x <= endRow + 1 &&
-			r.y >= startCol - 1 && r.y <= endCol + 1 &&
-			!visited.contains(r) && !lavas.contains(r))
-		{
-			queue.push(r);
-			visited.insert(r);
-		}
-
-		auto l = p + dirMap["L"];
-		if (l.x >= startRow - 1 && l.x <= endRow + 1 &&
-			l.y >= startCol - 1 && l.y <= endCol + 1 &&
-			!visited.contains(l) && !lavas.contains(l))
-		{
-			queue.push(l);
-			visited.insert(l);
-		}
-
-		auto u = p + dirMap["U"];
-		if (u.x >= startRow - 1 && u.x <= endRow + 1 &&
-			u.y >= startCol - 1 && u.y <= endCol + 1 &&
-			!visited.contains(u) && !lavas.contains(u))
-		{
-			queue.push(u);
-			visited.insert(u);
-		}
-
-		auto d = p + dirMap["D"];
-		if (d.x >= startRow - 1 && d.x <= endRow + 1 &&
-			d.y >= startCol - 1 && d.y <= endCol + 1 &&
-			!visited.contains(d) && !lavas.contains(d))
-		{
-			queue.push(d);
-			visited.insert(d);
-		}
-	}
-	
-	int res = ((abs((startRow - 1) - (endRow + 1)) + 1) * (abs((startCol - 1) - (endCol + 1)) + 1)) - visited.size();
-	*/
-
-	int res = 0;
 	return std::to_string(res);
 }
