@@ -4,36 +4,100 @@
 #include <iostream>
 #include <unordered_map>
 #include<unordered_set>
+#include<queue>
+#include<algorithm>
 
 
 using namespace Util;
 
 DayTwentyfive::DayTwentyfive(const std::shared_ptr<InputManager> getInput) : ICodeChallange(getInput) {}
 
-struct Egde
-{
-	std::string from;
-	std::string to;
-
-	std::string origFrom;
-	std::string origTo;
-
-};
-
 struct Vertex
 {
 	std::string name;
-	std::vector<Egde> egdes;
+	std::unordered_map<std::string, bool> egdes;
+	std::vector<std::string> nameHelper;
+
+	void initHName()
+	{
+		for (const auto& e : egdes)
+		{
+			nameHelper.push_back(e.first);
+		}
+	}
 };
 
+std::unordered_map<std::string, bool> egdesStatus;
 
+int calcSize(std::unordered_map<std::string, Vertex>& vertexes, const std::string& vStart)
+{
+	std::queue<Vertex> queue;
+	std::unordered_set<std::string> visited;
+
+	queue.push(vertexes[vStart]);
+
+	while (!queue.empty())
+	{
+		auto e = queue.front();
+		queue.pop();
+
+		visited.insert(e.name);
+
+		for (const auto& s : e.egdes)
+		{
+			if (s.second && !visited.contains(s.first))
+			{
+				queue.push(vertexes[s.first]);
+			}
+		}
+	}
+
+	return visited.size();
+}
+
+long long convertToASCII(const std::string& s)
+{
+	long long res = 0;
+	for (int i = 0; i < s.length(); i++)
+	{
+		res += (int)s[i];
+	}
+
+	return res;
+}
+
+std::string inactivate(std::unordered_map<std::string, Vertex>& vertexes, const std::vector<std::string>& vNameHelper)
+{
+
+	std::string vertexName;
+	int rand;
+	int rand2;
+	std::string egdeName;
+	do
+	{
+		rand = random(0, vertexes.size() - 1);
+
+		vertexName = vNameHelper[rand];
+
+		rand2 = random(0, vertexes[vertexName].egdes.size() - 1);
+
+		egdeName = vertexes[vertexName].nameHelper[rand2];
+
+
+	} while (!vertexes[vertexName].egdes[egdeName]);
+
+	vertexes[vertexName].egdes[egdeName] = false;
+	vertexes[egdeName].egdes[vertexName] = false;
+
+	return vertexName + "-" + egdeName;
+}
 
 std::string DayTwentyfive::runChallange()
 {
 	std::string line;
 
 	std::unordered_map<std::string, Vertex> vertexes;
-	std::vector<std::string> vertexNames;
+	std::vector<std::string> vNameHelper;
 
 	while (std::getline(inputManager->file, line))
 	{
@@ -43,80 +107,66 @@ std::string DayTwentyfive::runChallange()
 		vertexName.pop_back();
 		components.erase(components.begin());
 
-		vertexes[vertexName].name = vertexName;
-
-		std::vector<Egde> egdes;
-
 		for (auto& s : components)
 		{
-			vertexes[vertexName].egdes.push_back(Egde(vertexName, s, vertexName, s));
-			vertexes[s].egdes.push_back(Egde(s, vertexName, s, vertexName));
+			vertexes[vertexName].name = vertexName;
+			vertexes[vertexName].egdes[s] = true;
+			vertexes[s].egdes[vertexName] = true;
 			vertexes[s].name = s;
 		}
 	}
 
-	for (const auto& s : vertexes)
+	for (auto& v : vertexes)
 	{
-		vertexNames.push_back(s.first);
+		vNameHelper.push_back(v.first);
+		v.second.initHName();
 	}
 
-	auto originalGraph = vertexes;
+	std::pair<std::string, std::string> splitPair;
 
-	auto egdeSize = [](const std::unordered_map<std::string, Vertex>& vertexes)
+	std::unordered_set<long long> memory;
+
+	while(true)
 	{
-		int calc = 0;
-		for (const auto& v : vertexes)
-		{
-			for (const auto& ve : v.second.egdes)
-			{
-				calc++;
+		std::vector<std::string> inactiveEgdes;
 
-				if (calc > 3)
-					return calc;
+		std::string fullId = "";
+
+		for (int i = 0; i < 3; i++)
+		{
+			std::string id = inactivate(vertexes, vNameHelper);
+			fullId += id;
+			inactiveEgdes.push_back(id);
+		}
+
+		long long intId = convertToASCII(fullId);
+		
+		if (!memory.contains(intId))
+		{
+			memory.insert(intId);
+			if (calcSize(vertexes, vNameHelper.front()) != vertexes.size())
+			{
+				auto splitId = split(inactiveEgdes.front(), "-");
+				splitPair = { splitId[0], splitId[1] };
+				break;
 			}
 		}
-		return calc;
-	};
 
-	while (egdeSize(vertexes) != 3)
-	{
-		vertexes = originalGraph;
-
-		while (vertexes.size() > 2)
+		for (auto& egdeId : inactiveEgdes)
 		{
-			int rand = random(0, vertexNames.size() - 1);
+			auto splitId = split(egdeId, "-");
 
-			auto& vertex = vertexes[vertexNames[rand]];
-
-			int rand2 = random(0, vertex.egdes.size() - 1);
-
-			auto to = vertexes[vertex.egdes[rand2].to];
-			auto& from = vertexes[vertex.name];
-
-			for (const auto& s : from.egdes)
-			{
-				auto it = std::find_if(vertexes[s.to].egdes.begin(), vertexes[s.to].egdes.end(), [&from](const auto& st)
-					{
-						return st.to == from.name;
-					});
-
-				it->to = to.name;
-			}
-
-			auto it = std::find_if(to.egdes.begin(), to.egdes.end(), [&to](const auto& st)
-				{
-					return st.to == to.name;
-				});
-
-			to.egdes.erase(it);
-
-			vertexes.erase(to.name);
-			vertexNames.erase(vertexNames.begin() + rand);
+			vertexes[splitId[0]].egdes[splitId[1]] = true;
+			vertexes[splitId[1]].egdes[splitId[0]] = true;
 		}
 	}
 
+	auto size1 = calcSize(vertexes, splitPair.first);
+	auto size2 = calcSize(vertexes, splitPair.second);
 
-	return "0";
+	auto res = size1 * size2;
+
+	return std::to_string(res);
 }
 
 std::string DayTwentyfive::runChallangePart2()

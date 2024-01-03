@@ -15,10 +15,6 @@ namespace {
 		DOWN = 1,
 		LEFT = 2,
 		UP = 3,
-		SOUTHWEST = 4,
-		SOUTHEAST = 5,
-		NORTHEAST = 6,
-		NORTHWEST = 7
 	};
 
 	std::pair<int, int> findStartPos(const Matrix& matrix)
@@ -44,56 +40,7 @@ namespace {
 			pos.second < matrix.front().size();
 	}
 
-	bool tryMove(const Matrix& matrix, std::pair<int, int>& pos, Direction dir, int mult = 1)
-	{
-		std::vector<std::pair<int, int>> dirMove = { {0,1}, {1,0}, {0,-1}, {-1,0}, {1,1}, {1,-1}, {-1,-1}, {-1,1}};
-
-		int intDir = static_cast<int>(dir);
-
-		std::pair<int, int> newPos = pos;
-
-		if (dir == Direction::SOUTHWEST ||
-			dir == Direction::SOUTHEAST ||
-			dir == Direction::NORTHEAST ||
-			dir == Direction::NORTHWEST)
-		{
-			auto newPos2 = pos;
-
-			while (mult > 0)
-			{
-				newPos.first = newPos.first + dirMove[intDir].first;
-				newPos2.second = newPos2.second + dirMove[intDir].second;
-
-				if (!isInBounds(matrix, newPos) || !isInBounds(matrix, newPos2) || (matrix[newPos.first][newPos.second] == '#' && matrix[newPos2.first][newPos2.second] == '#'))
-					return false;
-
-				newPos.second = newPos.second + dirMove[intDir].second;
-				if (!isInBounds(matrix, newPos) || matrix[newPos.first][newPos.second] == '#')
-					return false;
-				mult--;
-			}
-		}
-		else
-		{
-
-			while (mult > 0)
-			{
-				newPos.first = newPos.first + dirMove[intDir].first;
-				if (!isInBounds(matrix, newPos) || matrix[newPos.first][newPos.second] == '#')
-					return false;
-
-				newPos.second = newPos.second + dirMove[intDir].second;
-				if (!isInBounds(matrix, newPos) || matrix[newPos.first][newPos.second] == '#')
-					return false;
-				mult--;
-			}
-		}
-
-		pos = newPos;
-		return true;
-	}
-
-	bool tryMovePart2(const Matrix& matrix, std::pair<int, int>& pos, Direction dir)
+	bool tryMove(const Matrix& matrix, std::pair<int, int>& pos, Direction dir)
 	{
 		std::vector<std::pair<int, int>> dirMove = { {0,1}, {1,0}, {0,-1}, {-1,0}};
 
@@ -108,19 +55,7 @@ namespace {
 
 		// Find relative pos
 
-		auto relNewpos = newPos;
-
-		while (relNewpos.first < 0)
-		{
-			relNewpos.first += maxRow;
-		}
-		while (relNewpos.second < 0)
-		{
-			relNewpos.second += maxColumn;
-		}
-
-		relNewpos = std::pair<int, int>(relNewpos.first % maxRow, relNewpos.second % maxColumn);
-		if (matrix[relNewpos.first][relNewpos.second] == '#')
+		if (matrix[newPos.first][newPos.second] == '#')
 			return false;
 
 		pos = newPos;
@@ -134,33 +69,36 @@ namespace {
 	};
 }
 
-std::string DayTwentyone::runChallange()
+int getLavasVisited(const Matrix& matrix, const std::pair<int,int>& startPos, int maxSteps)
 {
-	auto matrix = inputManager->getMatrix();
-
-	std::pair<int, int> startPos = findStartPos(matrix);
 
 	std::queue<Data> queue;
 	queue.push(Data(startPos, 0));
 
 	std::unordered_set<std::pair<int, int>, pair_hash> visited;
 
+	int res = 0;
+
 	while (!queue.empty())
 	{
 		auto d = queue.front();
 		queue.pop();
 
-		for (int i = 0; i < 8; i++)
+		if (d.steps % 2 == 0)
+		{
+			res++;
+		}
+
+		for (int i = 0; i < 4; i++)
 		{
 			auto tmpPos = d.pos;
-			int intMult = i < 4 ? 2 : 1;
 
-			bool success = tryMove(matrix, tmpPos, static_cast<Direction>(i), intMult);
+			bool success = tryMove(matrix, tmpPos, static_cast<Direction>(i));
 
 			if (success && !visited.contains(tmpPos))
 			{
-				int newSteps = d.steps + 2;
-				if (newSteps <= 64)
+				int newSteps = d.steps + 1;
+				if (newSteps <= maxSteps)
 				{
 					queue.push(Data(tmpPos, newSteps));
 					visited.insert(tmpPos);
@@ -169,12 +107,56 @@ std::string DayTwentyone::runChallange()
 		}
 	}
 
-	int res = visited.size();
+	return res;
+}
+
+std::string DayTwentyone::runChallange()
+{
+	auto matrix = inputManager->getMatrix();
+
+	std::pair<int, int> startPos = findStartPos(matrix);
+
+	int res = getLavasVisited(matrix, startPos, 64);
 
 	return std::to_string(res);
 }
 
 std::string DayTwentyone::runChallangePart2()
 {
-	return "0";
+	auto matrix = inputManager->getMatrix();
+
+	int evenResPerMap = getLavasVisited(matrix, { 0,0 }, 99999);
+	int unEvenPerMap = getLavasVisited(matrix, {0, 1}, 99999);
+
+	int width = matrix.front().size();
+	int height = matrix.front().size();
+
+	int totalSteps = 26501365;
+
+	int maps = totalSteps / width;
+
+	int stepsLeft = (maps * width) + (width / 2);
+
+	bool startUneven = maps % 2 == 0;
+
+	long long res = 0;
+
+	std::pair<int, int> startPos = startUneven ? std::pair<int,int>{height - 2, width / 2} : std::pair<int, int>{height - 1, width / 2};
+
+	// Up
+	res += getLavasVisited(matrix, startPos, startUneven ? stepsLeft - 1 : stepsLeft);
+
+	// Down
+	startPos = startUneven ? std::pair<int, int>{1, width / 2} : std::pair<int, int>{ 0, width / 2 };
+	res += getLavasVisited(matrix, startPos, startUneven ? stepsLeft - 1 : stepsLeft);
+
+	// Left
+	startPos = startUneven ? std::pair<int, int>{height/2, width - 2} : std::pair<int, int>{ height /2, width - 1 };
+	res += getLavasVisited(matrix, startPos, startUneven ? stepsLeft - 1 : stepsLeft);
+
+	// Right
+	startPos = startUneven ? std::pair<int, int>{height / 2, 1} : std::pair<int, int>{ height / 2, 0 };
+	res += getLavasVisited(matrix, startPos, startUneven ? stepsLeft - 1 : stepsLeft);
+
+	return std::to_string(res);
 }
